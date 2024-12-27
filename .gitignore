@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+
+# Global exclusion for all .env files
+*.env
+
+# Editor-specific
+.vscode/
+.idea/
+
+# macOS and temporary files
+.DS_Store
+*.swp
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# Kafka
+logs/
+tmp/
+
+# Flink
+flink/logs/
+flink/tmp/
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+
+# FastAPI
+fastapi/.env
+
+# Virtual Environment
+.venv/
+
+# Metrics (Grafana and Prometheus)
+metrics/grafana/data/
+metrics/prometheus/data/
+
+# ML Pipeline
+ml_pipeline/models/
+ml_pipeline/__pycache__/
+ml_pipeline/*.log
+
+# Raw Data Storage
+raw_data_storage/tmp/
+raw_data_storage/__pycache__/
+
+# Superset
+superset/data/
+superset/__pycache__/
