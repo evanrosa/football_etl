@@ -1,0 +1,22 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build and push Docker images
+        run: |
+          docker build -f Dockerfile -t myapp-fastapi:prod ./fastapi
+
+      - name: Deploy to Production
+        run: |
+          docker-compose -f docker-compose.yml -f docker-compose.override.prod.yml up -d

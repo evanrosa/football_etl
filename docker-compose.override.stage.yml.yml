@@ -1,0 +1,11 @@
+services:
+  fastapi:
+    environment:
+      APP_ENV: stage
+      DATABASE_URL: postgres://stage-db-url
+    deploy:
+      replicas: 1  # Single replica for staging
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"

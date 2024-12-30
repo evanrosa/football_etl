@@ -1,0 +1,11 @@
+services:
+  fastapi:
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: postgres://prod-db-url
+    deploy:
+      replicas: 3  # Scale to 3 replicas for production
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1G"
