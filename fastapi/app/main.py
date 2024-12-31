@@ -13,6 +13,7 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
+
 @app.post("/produce")
 def produce_message(message: dict):
     """Produce a message to Kafka."""
