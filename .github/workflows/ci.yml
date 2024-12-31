@@ -38,7 +38,11 @@ jobs:
         run: |
           for req in $(find . -name 'requirements.txt'); do
             pip install -r $req
-          done
+          done]
+
+      # Install flake8 explicitly
+      - name: Install flake8
+        run: pip install flake8
 
       # Run all tests
       - name: Run tests
