@@ -15,7 +15,7 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          docker build -f Dockerfile -t myapp-fastapi:stage ./fastapi
+          docker build -f ./fastapi/Dockerfile -t myapp-fastapi:stage ./fastapi
 
       - name: Deploy to Staging
         run: |
