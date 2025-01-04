@@ -1,0 +1,68 @@
+from pyflink.datastream import StreamExecutionEnvironment
+from pyflink.table import StreamTableEnvironment, EnvironmentSettings
+from pyflink.table.expressions import col
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+kafka_broker = os.getenv("KAFKA_BROKER")
+confluent_api_key = os.getenv("CONFLUENT_STAGE_KEY")
+confluent_api_secret = os.getenv("CONFLUENT_STAGE_SECRET")
+sport_radar_key = os.getenv("SPORTS_RADAR_KEY")
+
+def process_competitions():
+    # Set up the execution and table environments
+    env = StreamExecutionEnvironment.get_execution_environment()
+    settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
+    t_env = StreamTableEnvironment.create(env, environment_settings=settings)
+
+    # Kafka source DDL
+    kafka_source_ddl = f"""
+        CREATE TABLE kafka_source (
+            id STRING,
+            region STRING,
+            name STRING
+        ) WITH (
+            'connector' = 'kafka',
+            'topic' = 'football_global_competitions',
+            'properties.bootstrap.servers' = 'pkc-xyz123.us-central1.gcp.confluent.cloud:9092',
+            'properties.security.protocol' = 'SASL_SSL',
+            'properties.sasl.mechanism' = 'PLAIN',
+            'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username="{confluent_api_key}" password="{confluent_api_secret}";',
+            'format' = 'json',
+            'json.fail-on-missing-field' = 'false',
+            'json.ignore-parse-errors' = 'true'
+        )
+    """
+
+    # Kafka sink DDL
+    kafka_sink_ddl = f"""
+        CREATE TABLE kafka_sink (
+            id STRING,
+            region STRING,
+            name STRING
+        ) WITH (
+            'connector' = 'kafka',
+            'topic' = 'processed_football_global_competitions',
+            'properties.bootstrap.servers' = 'pkc-xyz123.us-central1.gcp.confluent.cloud:9092',
+            'properties.security.protocol' = 'SASL_SSL',
+            'properties.sasl.mechanism' = 'PLAIN',
+            'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username="{confluent_api_key}" password="{confluent_api_secret}";',
+            'format' = 'json'
+        )
+    """
+
+    # Execute DDLs
+    t_env.execute_sql(kafka_source_ddl)
+    t_env.execute_sql(kafka_sink_ddl)
+
+    # Transform data and write to sink
+    t_env.sql_query("""
+        SELECT id, region, name
+        FROM kafka_source
+        WHERE region = 'Europe'
+    """).execute_insert("kafka_sink")
+
+if __name__ == '__main__':
+    process_competitions()

@@ -1,0 +1,10 @@
+blob.server.port: 6124
+taskmanager.memory.flink.size: 1536m
+taskmanager.memory.managed.size: 512m
+parallelism.default: 2
+jobmanager.rpc.address: jobmanager
+taskmanager.numberOfTaskSlots: 2
+taskmanager.memory.task.heap.size: 1024m
+jobmanager.memory.heap.size: 1024m
+query.server.port: 6125
+jobmanager.memory.flink.size: 1280m
