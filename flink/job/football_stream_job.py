@@ -17,7 +17,7 @@ def process_competitions():
     settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
     t_env = StreamTableEnvironment.create(env, environment_settings=settings)
 
-    # Kafka source DDL
+    # Define Kafka source DDL
     kafka_source_ddl = f"""
         CREATE TABLE kafka_source (
             id STRING,
@@ -26,17 +26,23 @@ def process_competitions():
         ) WITH (
             'connector' = 'kafka',
             'topic' = 'football_global_competitions',
-            'properties.bootstrap.servers' = 'pkc-xyz123.us-central1.gcp.confluent.cloud:9092',
+            'properties.bootstrap.servers' = '{kafka_broker}',
+            'properties.group.id' = 'flink-source-group',
             'properties.security.protocol' = 'SASL_SSL',
             'properties.sasl.mechanism' = 'PLAIN',
             'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username="{confluent_api_key}" password="{confluent_api_secret}";',
+            'scan.startup.mode' = 'earliest-offset',
+            'properties.request.timeout.ms' = '60000',  -- Increased timeout
+            'properties.retry.backoff.ms' = '500',  -- Retry backoff
             'format' = 'json',
             'json.fail-on-missing-field' = 'false',
             'json.ignore-parse-errors' = 'true'
         )
     """
 
-    # Kafka sink DDL
+    t_env.execute_sql(kafka_source_ddl)
+
+    # Define Kafka sink DDL
     kafka_sink_ddl = f"""
         CREATE TABLE kafka_sink (
             id STRING,
@@ -45,7 +51,8 @@ def process_competitions():
         ) WITH (
             'connector' = 'kafka',
             'topic' = 'processed_football_global_competitions',
-            'properties.bootstrap.servers' = 'pkc-xyz123.us-central1.gcp.confluent.cloud:9092',
+            'properties.bootstrap.servers' = '{kafka_broker}',
+            'properties.group.id' = 'flink-sink-group',
             'properties.security.protocol' = 'SASL_SSL',
             'properties.sasl.mechanism' = 'PLAIN',
             'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username="{confluent_api_key}" password="{confluent_api_secret}";',
@@ -53,15 +60,20 @@ def process_competitions():
         )
     """
 
-    # Execute DDLs
-    t_env.execute_sql(kafka_source_ddl)
     t_env.execute_sql(kafka_sink_ddl)
+
+    result = t_env.sql_query("""
+        SELECT id, region, name
+        FROM kafka_source
+    """)
+    result.execute_insert("kafka_sink")
+
+    print("Debug: Data is being processed and written to the sink.")
 
     # Transform data and write to sink
     t_env.sql_query("""
         SELECT id, region, name
         FROM kafka_source
-        WHERE region = 'Europe'
     """).execute_insert("kafka_sink")
 
 if __name__ == '__main__':

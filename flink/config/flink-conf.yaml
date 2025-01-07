@@ -1,5 +1,5 @@
 blob.server.port: 6124
-taskmanager.memory.flink.size: 1536m
+taskmanager.memory.flink.size: 2048m
 taskmanager.memory.managed.size: 512m
 parallelism.default: 2
 jobmanager.rpc.address: jobmanager

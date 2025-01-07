@@ -12,16 +12,23 @@ sport_radar_key = os.getenv("SPORTS_RADAR_KEY")
 
 # Kafka consumer configuration for Confluent Cloud
 consumer = Consumer({
-    'bootstrap.servers': kafka_broker,  # Replace with your Confluent Cloud broker
+    'bootstrap.servers': kafka_broker,
     'group.id': 'soccer-data-consumer-group',
-    'auto.offset.reset': 'earliest',  # Start from the beginning if no offset is committed
+    'auto.offset.reset': 'earliest',
     'security.protocol': 'SASL_SSL',
     'sasl.mechanisms': 'PLAIN',
-    'sasl.username': confluent_api_key,  # Replace with your Confluent API key
-    'sasl.password': confluent_api_secret,  # Replace with your Confluent API secret
+    'sasl.username': confluent_api_key,
+    'sasl.password': confluent_api_secret,
+    'retry.backoff.ms': 500,
+    'session.timeout.ms': 120000,
+    'max.poll.interval.ms': 300000,
+    'request.timeout.ms': 60000,
 })
 
-topic = "football_global_competitions"
+
+
+
+topic = "processed_football_global_competitions"
 consumer.subscribe([topic])
 
 def process_message(message):

@@ -40,14 +40,24 @@ def delivery_report(err, msg):
         print(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
 def produce_topic(top, d):
-    for record in d.get('competitions', []):  # Adjust based on the API response structure
-        producer.produce(
-            topic=top,
-            key=str(record.get('id')),
-            value=json.dumps(record),
-            callback=delivery_report,
-        )
+    for record in d.get('competitions', []):
+        try:
+            producer.produce(
+                topic=top,
+                key=str(record.get('id')),
+                value=json.dumps(record),
+                callback=delivery_report,
+            )
+        except Exception as e:
+            print(f"Retrying message due to error: {e}")
+            producer.produce(
+                topic=top,
+                key=str(record.get('id')),
+                value=json.dumps(record),
+                callback=delivery_report,
+            )
     producer.flush()
+
 
 if __name__ == '__main__':
     endpoint = "Competitions"
