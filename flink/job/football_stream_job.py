@@ -15,6 +15,14 @@ def process_competitions():
     # Set up the execution and table environments
     env = StreamExecutionEnvironment.get_execution_environment()
     settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
+
+    # Optional checkpoint configurations
+    env.get_checkpoint_config().set_min_pause_between_checkpoints(5000)  # Minimum 5 seconds between checkpoints
+    env.get_checkpoint_config().set_checkpoint_timeout(60000)  # Timeout for a checkpoint (60 seconds)
+    env.get_checkpoint_config().set_max_concurrent_checkpoints(1)  # Only one checkpoint at a time
+
+
+    settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
     t_env = StreamTableEnvironment.create(env, environment_settings=settings)
 
     # Define Kafka source DDL
@@ -32,14 +40,13 @@ def process_competitions():
             'properties.sasl.mechanism' = 'PLAIN',
             'properties.sasl.jaas.config' = 'org.apache.kafka.common.security.plain.PlainLoginModule required username="{confluent_api_key}" password="{confluent_api_secret}";',
             'scan.startup.mode' = 'earliest-offset',
-            'properties.request.timeout.ms' = '60000',  -- Increased timeout
-            'properties.retry.backoff.ms' = '500',  -- Retry backoff
+            'properties.request.timeout.ms' = '60000',
+            'properties.retry.backoff.ms' = '500',
             'format' = 'json',
             'json.fail-on-missing-field' = 'false',
             'json.ignore-parse-errors' = 'true'
         )
     """
-
     t_env.execute_sql(kafka_source_ddl)
 
     # Define Kafka sink DDL
@@ -59,22 +66,15 @@ def process_competitions():
             'format' = 'json'
         )
     """
-
     t_env.execute_sql(kafka_sink_ddl)
-
-    result = t_env.sql_query("""
-        SELECT id, region, name
-        FROM kafka_source
-    """)
-    result.execute_insert("kafka_sink")
-
-    print("Debug: Data is being processed and written to the sink.")
 
     # Transform data and write to sink
     t_env.sql_query("""
         SELECT id, region, name
         FROM kafka_source
     """).execute_insert("kafka_sink")
+
+    print("Debug: Data is being processed and written to the sink.")
 
 if __name__ == '__main__':
     process_competitions()
