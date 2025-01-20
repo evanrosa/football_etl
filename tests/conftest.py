@@ -1,7 +1,7 @@
-import subprocess
-import pytest
 import time
 import socket
+import pytest
+from confluent_kafka import Producer, Consumer
 
 DOCKER_COMPOSE_FILE = "tests/kafka/integration/docker-compose.integration.yaml"
 
@@ -21,3 +21,15 @@ def kafka_docker_environment():
     """Use the existing Kafka environment for integration tests."""
     print("Reusing the existing Kafka instance. No additional containers are started.")
     yield
+
+@pytest.fixture
+def mock_producer(mocker):
+    """Fixture to mock Kafka Producer."""
+    producer_mock = mocker.Mock(spec=Producer)
+    return producer_mock
+
+@pytest.fixture
+def mock_consumer(mocker):
+    """Fixture to mock Kafka Consumer."""
+    consumer_mock = mocker.Mock(spec=Consumer)
+    return consumer_mock

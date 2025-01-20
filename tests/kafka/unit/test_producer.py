@@ -2,7 +2,6 @@ from kafka.scripts.producer import fetch_football_data, produce_topic, delivery_
 import kafka.scripts.producer
 import pytest
 import requests
-from confluent_kafka import Producer
 import json
 import importlib
 
@@ -17,13 +16,6 @@ def mock_env_variables(monkeypatch):
 
     # Reload the module to apply mocked environment variables
     importlib.reload(kafka.scripts.producer)
-
-@pytest.fixture
-def mock_producer(mocker):
-    producer_mock = mocker.Mock(spec=Producer)
-    mocker.patch("kafka.scripts.producer.producer", producer_mock)
-    return producer_mock
-
 
 @pytest.fixture
 def mock_requests(mocker):

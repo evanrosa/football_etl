@@ -2,7 +2,6 @@ import pytest
 import json
 import time
 from kafka.scripts.consumer import process_message
-from confluent_kafka import Consumer
 
 @pytest.fixture
 def mock_env_vars(monkeypatch):
@@ -11,13 +10,6 @@ def mock_env_vars(monkeypatch):
     monkeypatch.setenv("CONFLUENT_STAGE_KEY", "mock_key")
     monkeypatch.setenv("CONFLUENT_STAGE_SECRET", "mock_secret")
     monkeypatch.setenv("SPORTS_RADAR_KEY", "mock_sport_radar_key")
-
-@pytest.fixture
-def mock_consumer(mocker):
-    """Fixture to mock Kafka Consumer."""
-    consumer_mock = mocker.Mock(spec=Consumer)
-    mocker.patch("confluent_kafka.Consumer", consumer_mock)
-    return consumer_mock
 
 
 @pytest.fixture
