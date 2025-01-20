@@ -51,7 +51,14 @@ jobs:
           KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
           KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
         run: |
-          echo "Kafka credentials are set." # Placeholder for debugging or confirmation
+          echo "Kafka credentials are set. Username: $KAFKA_USERNAME"
+
+      # Debug environment variables
+      - name: Debug environment variables
+        run: env | grep KAFKA
+        env:
+          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
+          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
 
       # Run all tests
       - name: Run tests
