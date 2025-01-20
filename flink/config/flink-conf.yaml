@@ -1,6 +1,7 @@
 blob.server.port: 6124
 taskmanager.memory.flink.size: 2048m
 taskmanager.memory.managed.size: 512m
+classloader.resolve-order: parent-first
 parallelism.default: 2
 jobmanager.rpc.address: jobmanager
 taskmanager.numberOfTaskSlots: 2
