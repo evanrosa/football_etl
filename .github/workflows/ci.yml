@@ -45,10 +45,22 @@ jobs:
       - name: Install flake8
         run: pip install flake8
 
+      # Set Kafka credentials from GitHub secrets
+      - name: Set Kafka credentials
+        env:
+          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
+          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+        run: |
+          echo "Kafka credentials are set." # Placeholder for debugging or confirmation
+
       # Run all tests
       - name: Run tests
+        env:
+          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
+          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
         run: |
           for dir in $(find . -name 'tests' -type d); do
+            echo "Running tests in $dir"
             pytest $dir
           done
 
