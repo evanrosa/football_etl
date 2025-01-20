@@ -48,23 +48,27 @@ jobs:
       # Set Kafka credentials from GitHub secrets
       - name: Set Kafka credentials
         env:
-          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
-          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
+          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
+          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
         run: |
-          echo "Kafka credentials are set. Username: $KAFKA_USERNAME"
+          echo "Kafka credentials are set. Username: $CONFLUENT_STAGE_KEY"
+          if [ -z "$CONFLUENT_STAGE_KEY" ] || [ -z "$CONFLUENT_STAGE_SECRET" ]; then
+            echo "Kafka credentials are not set properly!" && exit 1
+          fi
 
       # Debug environment variables
       - name: Debug environment variables
-        run: env | grep KAFKA
-        env:
-          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
-          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+        run: |
+          env | grep KAFKA
+          env | grep CONFLUENT
 
       # Run all tests
       - name: Run tests
         env:
-          KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
-          KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
+          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
+          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
         run: |
           for dir in $(find . -name 'tests' -type d); do
             echo "Running tests in $dir"

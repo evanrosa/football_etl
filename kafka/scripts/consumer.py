@@ -5,15 +5,23 @@ import os
 
 load_dotenv()
 
+kafka_broker = os.getenv("KAFKA_BROKER")
+confluent_api_key = os.getenv("CONFLUENT_STAGE_KEY")
+confluent_api_secret = os.getenv("CONFLUENT_STAGE_SECRET")
+sport_radar_key = os.getenv("SPORTS_RADAR_KEY")
+
+if not confluent_api_key or not confluent_api_secret:
+    raise ValueError("Kafka credentials (CONFLUENT_STAGE_KEY and CONFLUENT_STAGE_SECRET) are not set or empty.")
+
 # Kafka consumer configuration for Confluent Cloud
 consumer = Consumer({
-    'bootstrap.servers': os.getenv("KAFKA_BROKER"),
+    'bootstrap.servers': kafka_broker,
     'group.id': 'soccer-data-consumer-group',
     'auto.offset.reset': 'earliest',
     'security.protocol': 'SASL_SSL',
     'sasl.mechanisms': 'PLAIN',
-    'sasl.username': os.getenv("CONFLUENT_STAGE_KEY"),
-    'sasl.password': os.getenv("CONFLUENT_STAGE_SECRET"),
+    'sasl.username': confluent_api_key,
+    'sasl.password': confluent_api_secret,
     'retry.backoff.ms': 500,
     'session.timeout.ms': 120000,
     'max.poll.interval.ms': 300000,

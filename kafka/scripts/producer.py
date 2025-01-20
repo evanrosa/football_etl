@@ -6,13 +6,21 @@ import os
 
 load_dotenv()
 
+kafka_broker = os.getenv("KAFKA_BROKER")
+confluent_api_key = os.getenv("CONFLUENT_STAGE_KEY")
+confluent_api_secret = os.getenv("CONFLUENT_STAGE_SECRET")
+sport_radar_key = os.getenv("SPORTS_RADAR_KEY")
+
+if not confluent_api_key or not confluent_api_secret:
+    raise ValueError("Kafka credentials (CONFLUENT_STAGE_KEY and CONFLUENT_STAGE_SECRET) are not set or empty.")
+
 # Configure the producer for Confluent Cloud
 producer = Producer({
-    'bootstrap.servers': os.getenv("KAFKA_BROKER"),
+    'bootstrap.servers': kafka_broker,
     'security.protocol': 'SASL_SSL',
     'sasl.mechanisms': 'PLAIN',
-    'sasl.username': os.getenv("CONFLUENT_STAGE_KEY"),
-    'sasl.password': os.getenv("CONFLUENT_STAGE_SECRET"),
+    'sasl.username': confluent_api_key,
+    'sasl.password': confluent_api_secret,
     'client.id': 'football-data-producer',
 })
 
@@ -22,7 +30,7 @@ API_URL = 'https://api.sportradar.com/soccer/trial/v4/en/competitions.json'
 def fetch_football_data(ep):
     try:
         url = API_URL.format(endpoint=ep)
-        response = requests.get(url, params={'api_key': os.getenv("SPORTS_RADAR_KEY")})
+        response = requests.get(url, params={'api_key': sport_radar_key})
         response.raise_for_status()
         res_data = response.json()
         if res_data and "competitions" in res_data:  # Validate response is not None
