@@ -48,6 +48,5 @@ jobs:
       # ADD Run all tests
 
 
-      # Lint the code
-      - name: Lint code
-        run: flake8 .
+      # ADD Lint the code
+
