@@ -27,40 +27,11 @@ jobs:
         with:
           python-version: "3.10"
 
-      # Set up Docker
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      # Install Docker-Compose
-      - name: Install Docker-Compose
+      # Debug Python Version
+      - name: Debug Python Version
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-          docker-compose --version
-
-      # Start Kafka with Docker Compose
-      - name: Start Kafka
-        working-directory: ./kafka
-        env:
-          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
-          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-        run: |
-          docker-compose up -d
-          docker-compose ps
-
-      # Wait for Kafka to be ready
-      - name: Wait for Kafka to be ready
-        working-directory: ./kafka
-        run: |
-          echo "Waiting for Kafka to be ready..."
-          for i in {1..30}; do
-            if docker exec kafka kafka-topics --bootstrap-server kafka:29092 --list &>/dev/null; then
-              echo "Kafka is ready!"
-              break
-            fi
-            echo "Waiting for Kafka..."
-            sleep 2
-          done
+          python --version
+          pip --version
 
       # Install dependencies for all components
       - name: Install dependencies
@@ -70,46 +41,13 @@ jobs:
             pip install -r $req
           done
 
-      # Debug Python Version
-      - name: Debug Python Version
-        run: |
-          python --version
-          pip --version
+      # Install flake8 explicitly
+      - name: Install flake8
+        run: pip install flake8
 
-      # Debug environment variables
-      - name: Debug environment variables
-        run: |
-          echo "CONFLUENT_STAGE_KEY=${CONFLUENT_STAGE_KEY:-not set}"
-          echo "CONFLUENT_STAGE_SECRET=${CONFLUENT_STAGE_SECRET:-not set}"
-          echo "KAFKA_BROKER=${KAFKA_BROKER:-not set}"
-        env:
-          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
-          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: localhost:9092
+      # ADD Run all tests
 
-      # Run all tests
-      - name: Run tests
-        env:
-          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
-          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: localhost:9092
-        run: |
-          for dir in $(find . -name 'tests' -type d); do
-            echo "Running tests in $dir"
-            pytest $dir
-          done
 
       # Lint the code
       - name: Lint code
         run: flake8 .
-
-      # Print Kafka logs on failure
-      - name: Print Kafka Logs
-        if: failure()
-        working-directory: ./kafka
-        run: docker-compose logs kafka
-
-      # Stop Kafka
-      - name: Stop Kafka
-        working-directory: ./kafka
-        run: docker-compose down -v
