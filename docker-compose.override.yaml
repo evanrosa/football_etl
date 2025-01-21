@@ -1,0 +1,11 @@
+services:
+  kafka:
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # Ensure Kafka is accessible locally
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092              # Match the local protocol
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'               # Enable auto topic creation for tests
+
+  schema-registry:
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://localhost:9092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry

@@ -1,0 +1,9 @@
+[ERROR] Could not parse configurations properly.
+[ERROR] Raw output from BashJavaUtils:
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+Exception in thread "main" org.apache.flink.configuration.IllegalConfigurationException: The Flink config file '/opt/flink/conf/config.yaml' (/opt/flink/conf/config.yaml) does not exist.
+	at org.apache.flink.configuration.GlobalConfiguration.loadConfiguration(GlobalConfiguration.java:156)
+	at org.apache.flink.runtime.util.ConfigurationParserUtils.loadAndModifyConfiguration(ConfigurationParserUtils.java:177)
+	at org.apache.flink.runtime.util.bash.FlinkConfigLoader.loadAndModifyConfiguration(FlinkConfigLoader.java:47)
+	at org.apache.flink.runtime.util.bash.BashJavaUtils.runCommand(BashJavaUtils.java:70)
+	at org.apache.flink.runtime.util.bash.BashJavaUtils.main(BashJavaUtils.java:56)

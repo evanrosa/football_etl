@@ -1,0 +1,48 @@
+services:
+  jobmanager:
+    build:
+      context: ./
+    container_name: flink_jobmanager
+    hostname: jobmanager
+    command: jobmanager
+    ports:
+      - "8081:8081"  # Flink Web UI
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - FLINK_JOB_MANAGER_HEAP_MEMORY=2048m
+      - FLINK_TASK_MANAGER_HEAP_MEMORY=2048m
+      - FLINK_TASK_MANAGER_NUMBER_OF_TASK_SLOTS=4
+    env_file:
+      - ../.env
+    networks:
+      - flink_network
+    volumes:
+      - ./job:/opt/flink/job  # Mount your job scripts into the container
+      - ./config:/opt/flink/conf  # Mount Flink configuration
+      - ./lib:/opt/flink/lib  # Mount Kafka JARs
+      - ./logs:/opt/flink/log  # Persist logs
+
+  taskmanager:
+    build:
+      context: ./
+    container_name: flink_taskmanager
+    hostname: taskmanager
+    command: taskmanager
+    depends_on:
+      - jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - FLINK_TASK_MANAGER_HEAP_MEMORY=2048m
+      - FLINK_TASK_MANAGER_NUMBER_OF_TASK_SLOTS=4
+    env_file:
+      - ../.env
+    networks:
+      - flink_network
+    volumes:
+      - ./config:/opt/flink/conf  # Mount Flink configuration
+      - ./lib:/opt/flink/lib  # Mount Kafka JARs
+      - ./logs:/opt/flink/log  # Persist logs
+
+networks:
+  flink_network:
+    driver: bridge

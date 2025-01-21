@@ -25,6 +25,7 @@ tmp/
 # Flink
 flink/logs/
 flink/tmp/
+flink/lib/
 
 # Airflow
 airflow/logs/
@@ -52,3 +53,5 @@ raw_data_storage/__pycache__/
 # Superset
 superset/data/
 superset/__pycache__/
+
+

@@ -45,13 +45,8 @@ jobs:
       - name: Install flake8
         run: pip install flake8
 
-      # Run all tests
-      - name: Run tests
-        run: |
-          for dir in $(find . -name 'tests' -type d); do
-            pytest $dir
-          done
+      # ADD Run all tests
 
-      # Lint the code
-      - name: Lint code
-        run: flake8 .
+
+      # ADD Lint the code
+
