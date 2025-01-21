@@ -18,8 +18,13 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: SASL_SSL://pkc-p11xm.us-east-1.aws.confluent.cloud:9092
+      KAFKA_ADVERTISED_LISTENERS: SASL_SSL://localhost:9092,SASL_SSL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SASL_SSL:SASL_SSL
+      KAFKA_LISTENERS: SASL_SSL://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="${CONFLUENT_STAGE_KEY}" password="${CONFLUENT_STAGE_SECRET}";
+      KAFKA_SECURITY_PROTOCOL: SASL_SSL
+      KAFKA_SASL_MECHANISM: PLAIN
     depends_on:
       - zookeeper
     networks:
@@ -32,8 +37,11 @@ services:
     ports:
       - "8082:8081"
     environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: SASL_SSL://pkc-p11xm.us-east-1.aws.confluent.cloud:9092
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: SASL_SSL://kafka:29092
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="${CONFLUENT_STAGE_KEY}" password="${CONFLUENT_STAGE_SECRET}";
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_SSL
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: PLAIN
     depends_on:
       - kafka
     networks:
@@ -46,7 +54,9 @@ services:
       - "8080:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: pkc-p11xm.us-east-1.aws.confluent.cloud:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CLUSTERS_1_NAME: confluent-cloud
+      KAFKA_CLUSTERS_1_BOOTSTRAP_SERVERS: pkc-p11xm.us-east-1.aws.confluent.cloud:9092
     depends_on:
       - kafka
     networks:

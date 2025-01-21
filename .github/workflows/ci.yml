@@ -21,10 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10"  # Downgrade Python version
+          python-version: "3.10"
 
       # Set up Docker
       - name: Set up Docker
@@ -39,17 +40,21 @@ jobs:
 
       # Start Kafka with Docker Compose
       - name: Start Kafka
-        working-directory: ./kafka  # Change to your Kafka Docker Compose folder
+        working-directory: ./kafka
+        env:
+          CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
+          CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
         run: |
           docker-compose up -d
           docker-compose ps
 
       # Wait for Kafka to be ready
       - name: Wait for Kafka to be ready
+        working-directory: ./kafka
         run: |
           echo "Waiting for Kafka to be ready..."
           for i in {1..30}; do
-            if echo dump | nc localhost 9092 &>/dev/null; then
+            if docker exec kafka kafka-topics --bootstrap-server kafka:29092 --list &>/dev/null; then
               echo "Kafka is ready!"
               break
             fi
@@ -80,14 +85,14 @@ jobs:
         env:
           CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
           CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: localhost:9092  # Update to your Kafka broker URL
+          KAFKA_BROKER: localhost:9092
 
       # Run all tests
       - name: Run tests
         env:
           CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
           CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: localhost:9092  # Update to your Kafka broker URL
+          KAFKA_BROKER: localhost:9092
         run: |
           for dir in $(find . -name 'tests' -type d); do
             echo "Running tests in $dir"
@@ -98,7 +103,13 @@ jobs:
       - name: Lint code
         run: flake8 .
 
+      # Print Kafka logs on failure
+      - name: Print Kafka Logs
+        if: failure()
+        working-directory: ./kafka
+        run: docker-compose logs kafka
+
       # Stop Kafka
       - name: Stop Kafka
-        working-directory: ./kafka  # Change to your Kafka Docker Compose folder
-        run: docker-compose down
+        working-directory: ./kafka
+        run: docker-compose down -v
