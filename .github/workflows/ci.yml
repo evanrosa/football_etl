@@ -21,11 +21,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Start Kafka with Docker Compose
+      - name: Start Kafka
+        working-directory: ./kafka  # Change to your Kafka Docker Compose folder
+        run: |
+          docker-compose up -d
+          docker-compose ps
+
+      # Wait for Kafka to be ready
+      - name: Wait for Kafka to be ready
+        run: |
+          echo "Waiting for Kafka to be ready..."
+          for i in {1..30}; do
+            if echo dump | nc localhost 9092 &>/dev/null; then
+              echo "Kafka is ready!"
+              break
+            fi
+            echo "Waiting for Kafka..."
+            sleep 2
+          done
 
       # Install dependencies for all components
       - name: Install dependencies
@@ -50,14 +68,14 @@ jobs:
         env:
           CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
           CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
+          KAFKA_BROKER: localhost:9092  # Update to your Kafka broker URL
 
       # Run all tests
       - name: Run tests
         env:
           CONFLUENT_STAGE_KEY: ${{ secrets.CONFLUENT_STAGE_KEY }}
           CONFLUENT_STAGE_SECRET: ${{ secrets.CONFLUENT_STAGE_SECRET }}
-          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
+          KAFKA_BROKER: localhost:9092  # Update to your Kafka broker URL
         run: |
           for dir in $(find . -name 'tests' -type d); do
             echo "Running tests in $dir"
@@ -67,3 +85,8 @@ jobs:
       # Lint the code
       - name: Lint code
         run: flake8 .
+
+      # Stop Kafka
+      - name: Stop Kafka
+        working-directory: ./kafka  # Change to your Kafka Docker Compose folder
+        run: docker-compose down
